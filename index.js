@@ -66,34 +66,20 @@ client.connect(err => {
         const file = req.files.file;
         const name = req.body.name;
         const email = req.body.email;
-        const filePath = `${__dirname}/trainers/${file.name}`;
-        file.mv(filePath, err => {
-            if (err) {
-                console.log(err);
-                 res.status(500).send({ msg: 'File to upload image' })
-            }
-            const newImg = fs.readFileSync(filePath);
-            const encImg = newImg.toString('base64');
+        const newImg = file.data;
+        const encImg = newImg.toString('base64');
 
-            var image = {
-                contentType: req.files.file.mimetype,
-                size: req.files.file.size,
-                img: Buffer.from(encImg, 'base64')
-            };
+        var image = {
+            contentType: file.mimetype,
+            size: file.size,
+            img: Buffer.from(encImg, 'base64')
+        };
 
-            trainerCollection.insertOne({ name, email, image})
-                .then(result => {
-                    fs.remove(filePath, error =>{
-                        if(error){
-                            console.log(error)
-                            res.status(500).send({ msg: 'Failed to upload image' })
-                        }
-                        res.send(result.insertedCount > 0);
-                    })
-                   
-                })
-        })
-   
+        trainerCollection.insertOne({ name, email, image })
+            .then(result => {
+                res.send(result.insertedCount > 0);
+            })
+
     });
 
     app.get('/trainers', (req, res) => {
